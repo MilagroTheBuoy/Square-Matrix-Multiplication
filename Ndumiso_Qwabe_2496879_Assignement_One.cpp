@@ -1,15 +1,16 @@
 #include <bits/stdc++.h> 
 #include <iostream>
 #include <vector>
+#include <chrono>
+#include <fstream>
 
+const int TRIALS_PER_N_VALUE = 3;
 void printMatrix(std::vector<std::vector<float>> matrix, size_t n){
     for(size_t i = 0; i < n; i++){
-
         for(size_t j = 0; j < n; j++){
-
             std::cout << matrix[i][j] << " ";
         }
-        std::cout << std::endl;
+        std::cout << std::endl << std::endl;
     }
 }
 
@@ -110,86 +111,6 @@ std::vector<std::vector<float>> subtractMatrices(const std::vector<std::vector<f
     return C;
 }
 
-// 0 is rowStart, 1 is rowEnd, 2 is colStart, 3 is colEnd
-/*std::vector<std::vector<float>> addMatrices(const std::vector<std::vector<float>> 
-                                        &A, const std::vector<std::vector<float>> &B,
-                                        int A_indices[], int B_indices[], int matrix_size){
-
-    std::vector<std::vector<float>> C(matrix_size, std::vector<float>(matrix_size));
-
-    if(A_indices[0] != -1){
-        for (size_t i = A_indices[0]; i < A_indices[1] + 1; i++){
-            for (size_t j = A_indices[2]; j < A_indices[3] + 1; j++){
-                C[i - A_indices[0]][j - A_indices[2]] += A[i][j];
-            }
-        }
-    }
-    else{
-        for (size_t i = 0; i < C.size(); i++){
-            for (size_t j = 0; j < C.size(); j++){
-                C[i][j] += A[i][j];
-            }
-        }
-    }
-
-    if(B_indices[0] != -1){
-        for (size_t i = B_indices[0]; i < B_indices[1] + 1; i++){
-            for (size_t j = B_indices[2]; j < B_indices[3] + 1; j++){
-                C[i - B_indices[0]][j - B_indices[2]] += B[i][j];
-            }
-        }
-    }
-    else{
-        for (size_t i = 0; i < C.size(); i++){
-            for (size_t j = 0; j < C.size(); j++){
-                C[i][j] += B[i][j];
-            }
-        }
-    }
-    return C;
-}
-
-std::vector<std::vector<float>> subtractMatrices(const std::vector<std::vector<float>> 
-                                        &A, const std::vector<std::vector<float>> &B,
-                                        int A_indices[], int B_indices[], int matrix_size){
-
-    std::vector<std::vector<float>> C(matrix_size, std::vector<float>(matrix_size));
-
-    if(A_indices[0] != -1){
-        for (size_t i = A_indices[0]; i < A_indices[1] + 1; i++){
-            for (size_t j = A_indices[2]; j < A_indices[3] + 1; j++){
-                //int d = i - A_indices[0];
-                //int g = j - A_indices[2];
-                C[i - A_indices[0]][j - A_indices[2]] += A[i][j];
-            }
-        }
-    }
-    else{
-        for (size_t i = 0; i < C.size(); i++){
-            for (size_t j = 0; j < C.size(); j++){
-                C[i][j] += A[i][j];
-            }
-        }
-    }
-
-    if(B_indices[0] != -1){
-        for (size_t i = B_indices[0]; i < B_indices[1] + 1; i++){
-            for (size_t j = B_indices[2]; j < B_indices[3] + 1; j++){
-                C[i - B_indices[0]][j - B_indices[2]] -= B[i][j];
-            }
-        }
-    }
-    else{
-        for (size_t i = 0; i < C.size(); i++){
-            for (size_t j = 0; j < C.size(); j++){
-                C[i][j] -= B[i][j];
-            }
-        }
-    }
-
-    return C;
-}*/
-
 std::vector<std::vector<float>> combineIntoC(std::vector<std::vector<float>> &C, 
                 std::vector<std::vector<float>> C_00, std::vector<std::vector<float>> C_01, 
                 std::vector<std::vector<float>> C_10, std::vector<std::vector<float>> C_11){
@@ -243,7 +164,8 @@ std::vector<std::vector<float>> square_matrix_mult_recurse(const std::vector<std
     return C;
 }
 
-std::vector<std::vector<float>> createSubMatrix(const std::vector<std::vector<float>> &A, int indices[], int subArraySize){
+std::vector<std::vector<float>> createSubMatrix(const std::vector<std::vector<float>> &A, int indices[],
+                                                int subArraySize){
     
     std::vector<std::vector<float>> subArray(subArraySize, std::vector<float>(subArraySize));
 
@@ -326,31 +248,144 @@ std::vector<std::vector<float>> square_matrix_mult_strassen(std::vector<std::vec
 }
 
 
+std::vector<std::vector<float>> generateRandomMatrix(size_t n){
+    
+    std::vector<std::vector<float>> randMatrix(n, std::vector<float>(n));
+    
+    for (size_t i = 0; i < n; i++){
+        for (size_t j = 0; j < n; j++){
+            randMatrix[i][j] = rand() % 1000;
+        }
+    }
+    return randMatrix;
+}
+
+void printCSV(std::vector<float> times, std::string fileName){
+    std::vector<std::string> labels = {"30", "60", "90", "120", "150", "180", "210", 
+    "240", "270", "300", "330", "360", "390"};//, "420", "450", "480", "510", "540", "570", "600"};
+    std::ofstream csv;
+    csv.open(fileName);
+    csv << "input,time\n";
+    csv <<"0,0\n";
+    for (size_t i = 0; i < labels.size(); i++){
+        csv << labels[i] << "," << times[i] << "\n";
+    }
+    csv.close();
+}
+
+void performBruteForceTrials(){
+    std::vector<int> nValues = {30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390};
+
+    std::vector<float> times;
+
+    for (size_t i = 0; i < nValues.size(); i++){
+        float averateTime = 0.0;
+        std::cout << nValues[i] << std::endl <<std::endl;
+        for (size_t j = 0; j < TRIALS_PER_N_VALUE; j++){
+            std::vector<std::vector<float>> A = generateRandomMatrix(nValues[i]);
+            std::vector<std::vector<float>> B = generateRandomMatrix(nValues[i]);
+            //std::cout << "Generated matrices" << std::endl <<std::endl;
+            auto start = std::chrono::high_resolution_clock::now();
+            std::vector<std::vector<float>> C = square_matrix_mult(A, B);
+            auto end = std::chrono::high_resolution_clock::now();
+            //printMatrix(C, C.size());
+            //std::cout << "Finished timing" << std::endl <<std::endl;
+            averateTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        }
+        averateTime /= TRIALS_PER_N_VALUE;
+        times.push_back(averateTime);
+    }
+    
+    printCSV(times, "BruteForce.csv");
+}
+
+void performStrassenTrials(){
+    std::vector<int> nValues = {30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390};
+
+    std::vector<float> times;
+
+    for (size_t i = 0; i < nValues.size(); i++){
+        float averateTime = 0.0;
+        std::cout << nValues[i] << std::endl <<std::endl;
+        for (size_t j = 0; j < TRIALS_PER_N_VALUE; j++){
+            std::vector<std::vector<float>> A = generateRandomMatrix(nValues[i]);
+            std::vector<std::vector<float>> B = generateRandomMatrix(nValues[i]);
+            //std::cout << "Generated matrices" << std::endl <<std::endl;
+            auto start = std::chrono::high_resolution_clock::now();
+            inflateMatrix(A);
+            inflateMatrix(B);
+            std::vector<std::vector<float>> C = square_matrix_mult_strassen(A, B);
+            deflateMatrix(C, nValues[i]);
+            auto end = std::chrono::high_resolution_clock::now();
+            //printMatrix(C, C.size());
+            //std::cout << "Finished timing" << std::endl <<std::endl;
+            averateTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        }
+        averateTime /= TRIALS_PER_N_VALUE;
+        times.push_back(averateTime);
+    }
+    
+    printCSV(times, "Strassen.csv");
+}
+
+void performRecurseTrials(){
+    std::vector<int> nValues = {30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390};
+
+    std::vector<float> times;
+
+    for (size_t i = 0; i < nValues.size(); i++){
+        float averateTime = 0.0;
+        std::cout << nValues[i] << std::endl <<std::endl;
+        for (size_t j = 0; j < TRIALS_PER_N_VALUE; j++){
+            std::vector<std::vector<float>> A = generateRandomMatrix(nValues[i]);
+            std::vector<std::vector<float>> B = generateRandomMatrix(nValues[i]);
+            int initialA_Indices[] = {0, A.size() - 1, 0, A.size()- 1};
+            int initialB_Indices[] = {0, B.size() - 1, 0, B.size() - 1};
+            //std::cout << "Generated matrices" << std::endl <<std::endl;
+            auto start = std::chrono::high_resolution_clock::now();
+            inflateMatrix(A);
+            inflateMatrix(B);
+            std::vector<std::vector<float>> C = square_matrix_mult_recurse(A, B, initialA_Indices, 
+                                                                            initialB_Indices);
+            deflateMatrix(C, nValues[i]);
+            auto end = std::chrono::high_resolution_clock::now();
+            //printMatrix(C, C.size());
+            //std::cout << "Finished timing" << std::endl <<std::endl;
+            averateTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        }
+        averateTime /= TRIALS_PER_N_VALUE;
+        times.push_back(averateTime);
+    }
+    
+    printCSV(times, "Recurse.csv");
+}
 int main(){
-
-    size_t originalSize;
-    std::vector<std::vector<float>> A = {{1, 5, 9}, {6, 4, 8}, {6, 4, 7}};
-    std::vector<std::vector<float>> B = {{4, 5, 9}, {8, 2, 6}, {6, 4, 5}};
-
-    std::vector<std::vector<float>> C = square_matrix_mult(A,B);
-    
-    originalSize = A.size();
-    inflateMatrix(A);
-    inflateMatrix(B);
-
-    int initialA_Indices[] = {0, A.size() - 1, 0, A.size()- 1};
-    int initialB_Indices[] = {0, B.size() - 1, 0, B.size() - 1};
-
-    std::vector<std::vector<float>> D = square_matrix_mult_recurse(A,B, initialA_Indices, initialB_Indices);
-    std::vector<std::vector<float>> E = square_matrix_mult_strassen(A,B);
-    
-    deflateMatrix(C, originalSize);
-    deflateMatrix(D, originalSize);
-    deflateMatrix(E, originalSize);
-
-    printMatrix(C, C.size());
-    printMatrix(D, D.size());
-    printMatrix(E, E.size());
+    performRecurseTrials();
+    performStrassenTrials();
+    performBruteForceTrials();
+    //size_t originalSize;
+    //std::vector<std::vector<float>> A = {{1, 5, 9}, {6, 4, 8}, {6, 4, 7}};
+    //std::vector<std::vector<float>> B = {{4, 5, 9}, {8, 2, 6}, {6, 4, 5}};
+//
+    //std::vector<std::vector<float>> C = square_matrix_mult(A,B);
+    //
+    //originalSize = A.size();
+    //inflateMatrix(A);
+    //inflateMatrix(B);
+//
+    //int initialA_Indices[] = {0, A.size() - 1, 0, A.size()- 1};
+    //int initialB_Indices[] = {0, B.size() - 1, 0, B.size() - 1};
+//
+    //std::vector<std::vector<float>> D = square_matrix_mult_recurse(A,B, initialA_Indices, initialB_Indices);
+    //std::vector<std::vector<float>> E = square_matrix_mult_strassen(A,B);
+    //
+    //deflateMatrix(C, originalSize);
+    //deflateMatrix(D, originalSize);
+    //deflateMatrix(E, originalSize);
+//
+    //printMatrix(C, C.size());
+    //printMatrix(D, D.size());
+    //printMatrix(E, E.size());
     /* 44 15 
         56 38 */
     return 0;
