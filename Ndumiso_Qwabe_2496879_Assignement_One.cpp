@@ -9,7 +9,7 @@ void printMatrix(std::vector<std::vector<float>> matrix, size_t n){
 
             std::cout << matrix[i][j] << " ";
         }
-        std::cout << std::endl;
+        std::cout << std::endl << std::endl;
     }
 }
 
@@ -111,7 +111,7 @@ std::vector<std::vector<float>> subtractMatrices(const std::vector<std::vector<f
 }
 
 // 0 is rowStart, 1 is rowEnd, 2 is colStart, 3 is colEnd
-/*std::vector<std::vector<float>> addMatrices(const std::vector<std::vector<float>> 
+std::vector<std::vector<float>> addMatrices(const std::vector<std::vector<float>> 
                                         &A, const std::vector<std::vector<float>> &B,
                                         int A_indices[], int B_indices[], int matrix_size){
 
@@ -188,7 +188,7 @@ std::vector<std::vector<float>> subtractMatrices(const std::vector<std::vector<f
     }
 
     return C;
-}*/
+}
 
 std::vector<std::vector<float>> combineIntoC(std::vector<std::vector<float>> &C, 
                 std::vector<std::vector<float>> C_00, std::vector<std::vector<float>> C_01, 
@@ -257,67 +257,95 @@ std::vector<std::vector<float>> createSubMatrix(const std::vector<std::vector<fl
 
 // 0 is rowStart, 1 is rowEnd, 2 is colStart, 3 is colEnd
 std::vector<std::vector<float>> square_matrix_mult_strassen(std::vector<std::vector<float>> 
-                                                            &A, std::vector<std::vector<float>> &B){
-    size_t n = A.size();
+                                                            &A, std::vector<std::vector<float>> &B,
+                                                            int A_indices[], int B_indices[], int n){
+    //size_t n;
+    //if(A_indices[0] != -1){
+    //    n = A_indices[1] - A_indices[0] + 1;
+    //}
+    //else{
+    //    n = A.size();
+    //}
+    
     std::vector<std::vector<float>> C(n, std::vector<float>(n));
     if(n == 1){
-        //size_t rowA = A_indices[0];
-        //size_t colA = A_indices[2];
-        //size_t rowB = B_indices[0];
-        //size_t colB = B_indices[2];
-        C[0][0] = A[0][0]*B[0][0];
+        size_t rowA;
+        size_t colA;
+        size_t rowB;
+        size_t colB;
+
+        if(A_indices[0] != -1){
+            rowA = A_indices[0];
+            colA = A_indices[2];
+        }
+        else{
+            rowA = 0;
+            colA = 0;
+        }
+        if(B_indices[0] != -1){
+            rowB = B_indices[0];
+            colB = B_indices[2];
+        }
+        else{
+            rowB = 0;
+            colB = 0;
+        }
+        
+        //rowB = B_indices[0];
+        //colB = B_indices[2];
+        C[0][0] = A[rowA][colA]*B[rowB][colB];
     }
     else{
         n /= 2;
         int ignore[4] = {-1, -1, -1, -1};
-        int A_00[4] = {0, n - 1, 0, n - 1};
-        int A_01[4] = {0, n - 1, n, 2*n - 1};
-        int A_10[4] = {n, 2*n -1, 0, n -1};
-        int A_11[4] = {n, 2*n - 1, n, 2*n - 1};
-        int B_00[4] = {0, n - 1, 0, n - 1};
-        int B_01[4] = {0, n - 1, n, 2*n - 1};
-        int B_10[4] = {n, 2*n -1, 0, n -1};
-        int B_11[4] = {n, 2*n - 1, n, 2*n - 1};
+        int A_00[4] = {A_indices[0], A_indices[0] + n - 1, A_indices[2], A_indices[2] + n - 1};
+        int A_01[4] = {A_indices[0], A_indices[0] + n - 1, A_indices[2] + n, A_indices[3]};
+        int A_10[4] = {A_indices[0] + n, A_indices[1], A_indices[2], A_indices[2] + n -1};
+        int A_11[4] = {A_indices[0] + n, A_indices[1], A_indices[2] + n, A_indices[3]};
+        int B_00[4] = {B_indices[0], B_indices[0] + n - 1, B_indices[2], B_indices[2] + n - 1};
+        int B_01[4] = {B_indices[0], B_indices[0] + n - 1, B_indices[2] + n, B_indices[3]};
+        int B_10[4] = {B_indices[0] + n, B_indices[1], B_indices[2], B_indices[2] + n -1};
+        int B_11[4] = {B_indices[0] + n, B_indices[1], B_indices[2] + n, B_indices[3]};
         
-        std::vector<std::vector<float>> A_00_mat = createSubMatrix(A, A_00, n);
-        std::vector<std::vector<float>> A_01_mat = createSubMatrix(A, A_01, n);
-        std::vector<std::vector<float>> A_10_mat = createSubMatrix(A, A_10, n);
-        std::vector<std::vector<float>> A_11_mat = createSubMatrix(A, A_11, n);
-        std::vector<std::vector<float>> B_00_mat = createSubMatrix(B, B_00, n);
-        std::vector<std::vector<float>> B_01_mat = createSubMatrix(B, B_01, n);
-        std::vector<std::vector<float>> B_10_mat = createSubMatrix(B, B_10, n);
-        std::vector<std::vector<float>> B_11_mat = createSubMatrix(B, B_11, n);
+        //std::vector<std::vector<float>> A_00_mat = createSubMatrix(A, A_00, n);
+        //std::vector<std::vector<float>> A_01_mat = createSubMatrix(A, A_01, n);
+        //std::vector<std::vector<float>> A_10_mat = createSubMatrix(A, A_10, n);
+        //std::vector<std::vector<float>> A_11_mat = createSubMatrix(A, A_11, n);
+        //std::vector<std::vector<float>> B_00_mat = createSubMatrix(B, B_00, n);
+        //std::vector<std::vector<float>> B_01_mat = createSubMatrix(B, B_01, n);
+        //std::vector<std::vector<float>> B_10_mat = createSubMatrix(B, B_10, n);
+        //std::vector<std::vector<float>> B_11_mat = createSubMatrix(B, B_11, n);
 
-        std::vector<std::vector<float>> S1 = subtractMatrices(B_01_mat, B_11_mat);
-        std::vector<std::vector<float>> S2 = addMatrices(A_00_mat, A_01_mat);
-        std::vector<std::vector<float>> S3 = addMatrices(A_10_mat, A_11_mat);
-        std::vector<std::vector<float>> S4 = subtractMatrices(B_10_mat, B_00_mat);
-        std::vector<std::vector<float>> S5 = addMatrices(A_00_mat, A_11_mat);
-        std::vector<std::vector<float>> S6 = addMatrices(B_00_mat, B_11_mat);
-        std::vector<std::vector<float>> S7 = subtractMatrices(A_01_mat, A_11_mat);
-        std::vector<std::vector<float>> S8 = addMatrices(B_10_mat, B_11_mat);
-        std::vector<std::vector<float>> S9 = subtractMatrices(A_00_mat, A_10_mat);
-        std::vector<std::vector<float>> S10 = addMatrices(B_00_mat, B_01_mat);
+        std::vector<std::vector<float>> S1 = subtractMatrices(B, B, B_01, B_11, n);
+        std::vector<std::vector<float>> S2 = addMatrices(A, A, A_00, A_01, n);
+        std::vector<std::vector<float>> S3 = addMatrices(A, A, A_10, A_11, n);
+        std::vector<std::vector<float>> S4 = subtractMatrices(B, B, B_10, B_00, n);
+        std::vector<std::vector<float>> S5 = addMatrices(A, A, A_00, A_11, n);
+        std::vector<std::vector<float>> S6 = addMatrices(B, B, B_00, B_11, n);
+        std::vector<std::vector<float>> S7 = subtractMatrices(A, A, A_01, A_11, n);
+        std::vector<std::vector<float>> S8 = addMatrices(B, B, B_10, B_11, n);
+        std::vector<std::vector<float>> S9 = subtractMatrices(A, A, A_00, A_10, n);
+        std::vector<std::vector<float>> S10 = addMatrices(B, B, B_00, B_01, n);
 
-        std::vector<std::vector<float>> P1 = square_matrix_mult_strassen(A_00_mat, S1);
-        std::vector<std::vector<float>> P2 = square_matrix_mult_strassen(S2, B_11_mat);
-        std::vector<std::vector<float>> P3 = square_matrix_mult_strassen(S3, B_00_mat);
-        std::vector<std::vector<float>> P4 = square_matrix_mult_strassen(A_11_mat, S4);
-        std::vector<std::vector<float>> P5 = square_matrix_mult_strassen(S5, S6);
-        std::vector<std::vector<float>> P6 = square_matrix_mult_strassen(S7, S8);
-        std::vector<std::vector<float>> P7 = square_matrix_mult_strassen(S9, S10);
+        std::vector<std::vector<float>> P1 = square_matrix_mult_strassen(A, S1, A_00, ignore, n);
+        std::vector<std::vector<float>> P2 = square_matrix_mult_strassen(S2, B, ignore, B_11, n);
+        std::vector<std::vector<float>> P3 = square_matrix_mult_strassen(S3, B, ignore, B_00, n);
+        std::vector<std::vector<float>> P4 = square_matrix_mult_strassen(A, S4, A_11, ignore, n);
+        std::vector<std::vector<float>> P5 = square_matrix_mult_strassen(S5, S6, ignore, ignore, n);
+        std::vector<std::vector<float>> P6 = square_matrix_mult_strassen(S7, S8, ignore, ignore, n);
+        std::vector<std::vector<float>> P7 = square_matrix_mult_strassen(S9, S10, ignore, ignore, n);
 
-        std::vector<std::vector<float>> C_00 = addMatrices(P5, P4);
-        C_00 = subtractMatrices(C_00, P2);
-        C_00 = addMatrices(C_00, P6);
+        std::vector<std::vector<float>> C_00 = addMatrices(P5, P4, ignore, ignore, n);
+        C_00 = subtractMatrices(C_00, P2, ignore, ignore, n);
+        C_00 = addMatrices(C_00, P6, ignore, ignore, n);
 
-        std::vector<std::vector<float>> C_01 = addMatrices(P1, P2);
+        std::vector<std::vector<float>> C_01 = addMatrices(P1, P2, ignore, ignore, n);
 
-        std::vector<std::vector<float>> C_10 = addMatrices(P3, P4);
+        std::vector<std::vector<float>> C_10 = addMatrices(P3, P4, ignore, ignore, n);
 
-        std::vector<std::vector<float>> C_11 = addMatrices(P5, P1);
-        C_11 = subtractMatrices(C_11, P3);
-        C_11 = subtractMatrices(C_11, P7);
+        std::vector<std::vector<float>> C_11 = addMatrices(P5, P1, ignore, ignore, n);
+        C_11 = subtractMatrices(C_11, P3, ignore, ignore, n);
+        C_11 = subtractMatrices(C_11, P7, ignore, ignore, n);
 
         C = combineIntoC(C, C_00, C_01, C_10, C_11);
 
@@ -331,7 +359,8 @@ int main(){
     size_t originalSize;
     std::vector<std::vector<float>> A = {{1, 5, 9}, {6, 4, 8}, {6, 4, 7}};
     std::vector<std::vector<float>> B = {{4, 5, 9}, {8, 2, 6}, {6, 4, 5}};
-
+    //std::vector<std::vector<float>> A = {{1, 5}, {6, 4}};
+    //std::vector<std::vector<float>> B = {{4, 5}, {8, 2}};
     std::vector<std::vector<float>> C = square_matrix_mult(A,B);
     
     originalSize = A.size();
@@ -342,7 +371,7 @@ int main(){
     int initialB_Indices[] = {0, B.size() - 1, 0, B.size() - 1};
 
     std::vector<std::vector<float>> D = square_matrix_mult_recurse(A,B, initialA_Indices, initialB_Indices);
-    std::vector<std::vector<float>> E = square_matrix_mult_strassen(A,B);
+    std::vector<std::vector<float>> E = square_matrix_mult_strassen(A,B, initialA_Indices, initialB_Indices, A.size());
     
     deflateMatrix(C, originalSize);
     deflateMatrix(D, originalSize);
