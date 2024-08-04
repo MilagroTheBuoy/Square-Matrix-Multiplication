@@ -346,7 +346,7 @@ void performRecurseTrials(){
             inflateMatrix(A);
             inflateMatrix(B);
             std::vector<std::vector<float>> C = square_matrix_mult_recurse(A, B, initialA_Indices, 
-                                                                            initialB_Indices);
+                                                                                    initialB_Indices);
             deflateMatrix(C, nValues[i]);
             auto end = std::chrono::high_resolution_clock::now();
             //printMatrix(C, C.size());
