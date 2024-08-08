@@ -1,14 +1,17 @@
 #include <bits/stdc++.h> 
 #include <iostream>
-#include <vector>
+//#include <vector>
 #include <chrono>
 #include <fstream>
 
+
+
 const int TRIALS_PER_N_VALUE = 3;
-void printMatrix(std::vector<std::vector<float>> matrix, size_t n){
+
+void printMatrix(float *matrix, size_t n){
     for(size_t i = 0; i < n; i++){
         for(size_t j = 0; j < n; j++){
-            std::cout << matrix[i][j] << " ";
+            std::cout << *((matrix + i * n) + j) << " ";
         }
         std::cout << std::endl << std::endl;
     }
@@ -359,10 +362,25 @@ void performRecurseTrials(){
     
     printCSV(times, "Recurse.csv");
 }
+
 int main(){
-    performRecurseTrials();
-    performStrassenTrials();
-    performBruteForceTrials();
+    //performRecurseTrials();
+    //performStrassenTrials();
+    //performBruteForceTrials();
+    int size = 4;
+    float A[size][size] = {{1, 5, 9, 0}, {6, 4, 8, 0}, {6, 4, 7, 0}, {0, 0, 0, 0}};
+    float B[size][size] = {{4, 5, 9, 0}, {8, 2, 6, 0}, {6, 4, 5, 0}, {0, 0, 0, 0}};
+    float C[size][size];
+    //r |= r >> 1;
+    int nextSize = pow(2, ceil(log(size)/log(2)));
+
+    //std::cout << next;
+
+    float new_A[nextSize][nextSize];
+    float new_B[nextSize][nextSize];
+
+    printMatrix(*A, size);
+    
     //size_t originalSize;
     //std::vector<std::vector<float>> A = {{1, 5, 9}, {6, 4, 8}, {6, 4, 7}};
     //std::vector<std::vector<float>> B = {{4, 5, 9}, {8, 2, 6}, {6, 4, 5}};
