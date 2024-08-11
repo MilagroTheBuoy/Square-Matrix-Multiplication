@@ -21,7 +21,7 @@ for i in n:
 
 plt.xlabel('input size (n)')
 plt.ylabel('time (ms)')
-plt.title(title);
+plt.title(title)
 plt.ylim(ymin=0)
 plt.xlim(xmin=0)
 plt.legend(shadow = False, fancybox = True)

@@ -11,8 +11,6 @@ class SpecialArray{
         float ** rows;
         float *arrayData;
         int arrSize;
-        bool defaultInitialisation = true;
-        std::string name = "";
         
         SpecialArray(int n){
             arrSize = n;
@@ -30,34 +28,13 @@ class SpecialArray{
             for(int i = 0; i < n; i++){
                 rows[i] = (arrayData + i * n);
             }
-            defaultInitialisation = false;
         }
 
         ~SpecialArray(){
-            if(!defaultInitialisation){
-                bool f =(*rows == nullptr);
-                delete[] arrayData;
-                delete[] rows;
-                arrayData = nullptr;
-                rows = nullptr;
-            }
-            else{
-                delete[] arrayData;
-                delete[] rows;
-                arrayData = nullptr;
-                rows = nullptr;
-            }
+            delete[] arrayData;
+            delete[] rows;
         }
 };
-
-void printMatrix(float *matrix, size_t n){
-    for(size_t row = 0; row < n; row++){
-        for(size_t col = 0; col < n; col++){
-            std::cout << *((matrix + row * n) + col) << " ";
-        }
-        std::cout << std::endl << std::endl;
-    }
-}
 
 void printMatrix(SpecialArray *matrix, size_t n){
     for(size_t row = 0; row < n; row++){
@@ -66,11 +43,6 @@ void printMatrix(SpecialArray *matrix, size_t n){
         }
         std::cout << std::endl << std::endl;
     }
-}
-
-//eg. 10 is a power of two, 10 & 01 = 00. negated is 11
-bool isPowerOfTwo(size_t num){
-    return !(num & (num - 1));
 }
 
 void addMatrices(SpecialArray *A, SpecialArray *B, SpecialArray &C, 
@@ -99,7 +71,6 @@ void addMatrices(SpecialArray *A, SpecialArray *B, SpecialArray &C, int mat_A[],
     }
 }
 
-
 void subtractMatrices(SpecialArray *A, SpecialArray *B, SpecialArray &C, int mat_A[], int mat_B[],
                 int mat_C[], int n){
 
@@ -127,7 +98,6 @@ void addSingleMatrix(SpecialArray *A, SpecialArray &C, int mat_A[], int mat_C[],
     }
 }
 
-
 void subtractSingleMatrix(SpecialArray *A, SpecialArray &C, int mat_A[], int mat_C[], int n){
 
     int startRowC = mat_C[0], endRowC = mat_C[1], startColC = mat_C[2], endColC = mat_C[3];
@@ -140,26 +110,12 @@ void subtractSingleMatrix(SpecialArray *A, SpecialArray &C, int mat_A[], int mat
     }
 }
 
-void square_matrix_mult(float *A, float *B, float *C, int n){
-    for(size_t row = 0; row < n; row++){
-        for(size_t col = 0; col < n; col++){
-            for(size_t k = 0; k < n; k++){
-                int a_num = *((A + row * n) + k);
-                int b_num = *((B + k * n) + col);
-                *((C + row * n) + col) +=  a_num * b_num;
-            }
-        }
-    }
-}
-
 SpecialArray square_matrix_mult(SpecialArray *A, SpecialArray *B, int n){
 
     SpecialArray C = SpecialArray(n);
     for(size_t row = 0; row < n; row++){
         for(size_t col = 0; col < n; col++){
             for(size_t k = 0; k < n; k++){
-                //int a_num = *((A + row * n) + k);
-                //int b_num = *((B + k * n) + col);
                 C.rows[row][col] +=  A->rows[row][k] * B->rows[k][col];
             }
         }
@@ -181,6 +137,7 @@ SpecialArray square_matrix_mult_recurse(SpecialArray *A, SpecialArray *B, int A_
         C.rows[0][0] = A->rows[rowA][colA] * B->rows[rowB][colB];
     }
     else{
+
         arraySize /= 2;
 
         int A_00[4] = {A_indices[0], A_indices[0] + arraySize - 1, A_indices[2],
@@ -222,13 +179,14 @@ SpecialArray square_matrix_mult_recurse(SpecialArray *A, SpecialArray *B, int A_
         SpecialArray garbEight = square_matrix_mult_recurse(A, B, A_11, B_11, arraySize);
         addMatrices(&garbSeven, &garbEight, C, C_11, arraySize);
     }
+
     return C;
 }
 
 // 0 is rowStart, 1 is rowEnd, 2 is colStart, 3 is colEnd
 SpecialArray square_matrix_mult_strassen(SpecialArray *A, SpecialArray *B, int A_indices[],
                                         int B_indices[], int arraySize){
-    //size_t n = A->arrSize;
+    
     SpecialArray C = SpecialArray(arraySize);
     if(arraySize == 1){
         size_t rowA = A_indices[0];
@@ -238,6 +196,7 @@ SpecialArray square_matrix_mult_strassen(SpecialArray *A, SpecialArray *B, int A
         C.rows[0][0] = A->rows[rowA][colA]*B->rows[rowB][colB];
     }
     else{
+
         arraySize /= 2;
 
         int A_00[4] = {A_indices[0], A_indices[0] + arraySize - 1, A_indices[2],
@@ -309,30 +268,29 @@ SpecialArray square_matrix_mult_strassen(SpecialArray *A, SpecialArray *B, int A
         addMatrices(&P5, &P4, C, C_00, arraySize);
         subtractSingleMatrix(&P2, C, defaultArray, C_00, arraySize);
         addSingleMatrix(&P6, C, defaultArray, C_00, arraySize);
-        //std::vector<std::vector<float>> C_00 = addMatrices(P5, P4);
-        //C_00 = subtractMatrices(C_00, P2);
-        //C_00 = addMatrices(C_00, P6);
 
         addMatrices(&P1, &P2, C, C_01, arraySize);
-        //std::vector<std::vector<float>> C_01 = addMatrices(P1, P2);
 
         addMatrices(&P3, &P4, C, C_10, arraySize);
-        //std::vector<std::vector<float>> C_10 = addMatrices(P3, P4);
 
         addMatrices(&P5, &P1, C, C_11, arraySize);
         subtractSingleMatrix(&P3, C, defaultArray, C_11, arraySize);
         subtractSingleMatrix(&P7, C, defaultArray, C_11, arraySize);
-        //std::vector<std::vector<float>> C_11 = addMatrices(P5, P1);
-        //C_11 = subtractMatrices(C_11, P3);
-        //C_11 = subtractMatrices(C_11, P7);
     }
 
     return C;
 }
 
-SpecialArray generateRandomMatrix(size_t matrixSize){
+SpecialArray generateRandomMatrix(size_t matrixSize, bool shouldIncreaseSize){
     
-    int nextSize = pow(2, ceil(log(matrixSize)/log(2)));
+    int nextSize;
+    if(shouldIncreaseSize){
+        nextSize = pow(2, ceil(log(matrixSize)/log(2)));
+    }
+    else{
+        nextSize = matrixSize;
+    }
+
     SpecialArray* randMatrix = new SpecialArray(nextSize);
     
     for (size_t i = 0; i < matrixSize; i++){
@@ -343,9 +301,20 @@ SpecialArray generateRandomMatrix(size_t matrixSize){
     return *randMatrix;
 }
 
+SpecialArray copySmallerVersion(SpecialArray *B, int matrixSize){
+    SpecialArray A = SpecialArray(matrixSize);
+
+    for(int i = 0; i < matrixSize; i++){
+        for(int j = 0; j < matrixSize; j++){
+            A.rows[i][j] = B->rows[i][j];
+        }
+    }
+    return A;
+}
+
 void printCSV(std::vector<float> times, std::string fileName){
     std::vector<std::string> labels = {"30", "60", "90", "120", "150", "180", "210", 
-    "240", "270", "300", "330", "360", "390"};//, "420", "450", "480", "510", "540", "570", "600"};
+    "240", "270", "300", "330", "360", "390", "420", "450", "480", "510", "540", "570"};//, "600"};
     std::ofstream csv;
     csv.open(fileName);
     csv << "input,time\n";
@@ -356,127 +325,66 @@ void printCSV(std::vector<float> times, std::string fileName){
     csv.close();
 }
 
-void performBruteForceTrials(){
-    std::vector<int> nValues = {30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390};
+void performTrials(){
+    std::vector<int> nValues = {30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390,
+                                420, 450, 480, 510, 540, 570};
 
-    std::vector<float> times;
-
-    for (size_t i = 0; i < nValues.size(); i++){
-        float averateTime = 0.0;
-        std::cout << nValues[i] << std::endl <<std::endl;
-        for (size_t j = 0; j < TRIALS_PER_N_VALUE; j++){
-            SpecialArray A = generateRandomMatrix(nValues[i]);
-            SpecialArray B = generateRandomMatrix(nValues[i]);
-            int initialA_Indices[] = {0, A.arrSize - 1, 0, A.arrSize- 1};
-            int initialB_Indices[] = {0, B.arrSize - 1, 0, B.arrSize - 1};
-            auto start = std::chrono::high_resolution_clock::now();
-            SpecialArray C = square_matrix_mult(&A, &B, A.arrSize);
-            auto end = std::chrono::high_resolution_clock::now();
-            //printMatrix(C, C.size());
-            //std::cout << "Finished timing" << std::endl <<std::endl;
-            averateTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-        }
-        averateTime /= TRIALS_PER_N_VALUE;
-        times.push_back(averateTime);
-    }
-    
-    printCSV(times, "BruteForce.csv");
-}
-
-void performStrassenTrials(){
-    std::vector<int> nValues = {30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390};
-
-    std::vector<float> times;
+    std::vector<float> timesRecurse, timesBruteForce, timesStrassen;
 
     for (size_t i = 0; i < nValues.size(); i++){
-        float averateTime = 0.0;
+        float averateTimeRecurse = 0.0, averateTimeBruteForce = 0.0, averateTimeStrassen = 0.0;
         std::cout << nValues[i] << std::endl <<std::endl;
         for (size_t j = 0; j < TRIALS_PER_N_VALUE; j++){
-            SpecialArray A = generateRandomMatrix(nValues[i]);
-            SpecialArray B = generateRandomMatrix(nValues[i]);
+            SpecialArray A = generateRandomMatrix(nValues[i], true);
+            SpecialArray B = generateRandomMatrix(nValues[i], true);
+
+            SpecialArray H = copySmallerVersion(&A, nValues[i]);
+            SpecialArray I = copySmallerVersion(&B, nValues[i]);
+
             int initialA_Indices[] = {0, A.arrSize - 1, 0, A.arrSize- 1};
             int initialB_Indices[] = {0, B.arrSize - 1, 0, B.arrSize - 1};
-            auto start = std::chrono::high_resolution_clock::now();
-            SpecialArray C = square_matrix_mult_strassen(&A, &B, initialA_Indices, initialB_Indices, A.arrSize);
-            auto end = std::chrono::high_resolution_clock::now();
-            //std::cout << "Finished timing" << std::endl <<std::endl;
-            averateTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-        }
-        averateTime /= TRIALS_PER_N_VALUE;
-        times.push_back(averateTime);
-    }
-    
-    printCSV(times, "Strassen.csv");
-}
 
-void performRecurseTrials(){
-    std::vector<int> nValues = {30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390};
-
-    std::vector<float> times;
-
-    for (size_t i = 0; i < nValues.size(); i++){
-        float averateTime = 0.0;
-        std::cout << nValues[i] << std::endl <<std::endl;
-        for (size_t j = 0; j < TRIALS_PER_N_VALUE; j++){
-            SpecialArray A = generateRandomMatrix(nValues[i]);
-            SpecialArray B = generateRandomMatrix(nValues[i]);
-            int initialA_Indices[] = {0, A.arrSize - 1, 0, A.arrSize- 1};
-            int initialB_Indices[] = {0, B.arrSize - 1, 0, B.arrSize - 1};
-            auto start = std::chrono::high_resolution_clock::now();
+            auto startRecurse = std::chrono::high_resolution_clock::now();
             SpecialArray C = square_matrix_mult_recurse(&A, &B, initialA_Indices, initialB_Indices, A.arrSize);
-            //std::cout << "Finished timing" << std::endl <<std::endl;
-            auto end = std::chrono::high_resolution_clock::now();
-            averateTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+            SpecialArray D = copySmallerVersion(&C, nValues[i]);
+            printMatrix(&D, nValues[i]);
+            auto endRecurse = std::chrono::high_resolution_clock::now();
+            averateTimeRecurse += std::chrono::duration_cast<std::chrono::milliseconds>(endRecurse 
+                                                                                        - startRecurse).count();
+
+            auto startBruteForce = std::chrono::high_resolution_clock::now();
+            SpecialArray E = square_matrix_mult(&H, &I, nValues[i]);
+            printMatrix(&E, nValues[i]);
+            auto endBruteForce = std::chrono::high_resolution_clock::now();
+            averateTimeBruteForce += std::chrono::duration_cast<std::chrono::milliseconds>(endBruteForce 
+                                                                                            - startBruteForce).count();
+
+            auto startStrassen = std::chrono::high_resolution_clock::now();
+            SpecialArray F = square_matrix_mult_strassen(&A, &B, initialA_Indices, initialB_Indices, A.arrSize);
+            SpecialArray G = copySmallerVersion(&F, nValues[i]);
+            printMatrix(&G, nValues[i]);
+            auto endStrassen = std::chrono::high_resolution_clock::now();
+            averateTimeStrassen += std::chrono::duration_cast<std::chrono::milliseconds>(endStrassen 
+                                                                                        - startStrassen).count();
+
         }
-        averateTime /= TRIALS_PER_N_VALUE;
-        times.push_back(averateTime);
+        
+        averateTimeRecurse /= TRIALS_PER_N_VALUE;
+        timesRecurse.push_back(averateTimeRecurse);
+
+        averateTimeBruteForce /= TRIALS_PER_N_VALUE;
+        timesBruteForce.push_back(averateTimeBruteForce);
+
+        averateTimeStrassen /= TRIALS_PER_N_VALUE;
+        timesStrassen.push_back(averateTimeStrassen);
     }
     
-    printCSV(times, "Recurse.csv");
+    printCSV(timesRecurse, "Recurse.csv");
+    printCSV(timesBruteForce, "BruteForce.csv");
+    printCSV(timesStrassen, "Strassen.csv");
 }
 
 int main(){
-    performRecurseTrials();
-    performStrassenTrials();
-    performBruteForceTrials();
-    //int size = 4;
-    //float *i;
-    //i = new float[size*size]{1, 5, 9, 0, 6, 4, 8, 0, 6, 4, 7, 0, 0, 0, 0, 0};
-    //float *j;
-    //j = new float[size*size]{4, 5, 9, 0, 8, 2, 6, 0, 6, 4, 5, 0, 0, 0, 0, 0};
-    
-    //SpecialArray *A = new SpecialArray(size, i);
-    //SpecialArray *B = new SpecialArray(size, j);
-    //float B[size][size] = {{4}};
-    //float C[size][size];
-    //r |= r >> 1;
-    //int nextSize = pow(2, ceil(log(size)/log(2)));
-
-    //std::cout << next;
-
-    //float new_A[nextSize][nextSize];
-    //float new_B[nextSize][nextSize];
-    //square_matrix_mult(*A, *B, *C, nextSize);
-    //int initialA_Indices[] = {0, size - 1, 0, size - 1};
-    //int initialB_Indices[] = {0, size - 1, 0, size - 1};
-    //SpecialArray C = square_matrix_mult_recurse(A, B, initialA_Indices, initialB_Indices, size);
-    //printMatrix(&C, size);
-    //SpecialArray D= square_matrix_mult_strassen(A, B, initialA_Indices, initialB_Indices, size);
-    //printMatrix(&D, size);
-    //A->rows[1][0] = 57;
-    //printMatrix(A, size);
-    
-    /* 44 15 
-        56 38 */
-    
-    /*98 51 84 0 
-    
-    104 70 118 0 
-    
-    98 66 113 0 
-    
-    0 0 0 0 */
-    //delete A;
-    //delete B;
+    performTrials();
     return 0;
 }
