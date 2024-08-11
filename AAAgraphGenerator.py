@@ -28,4 +28,5 @@ plt.legend(shadow = False, fancybox = True)
 
 plt.xticks(np.arange(min(X), max(X)+1, 30))
 plt.savefig(title +'.pdf')
+plt.show()
 plt.close()

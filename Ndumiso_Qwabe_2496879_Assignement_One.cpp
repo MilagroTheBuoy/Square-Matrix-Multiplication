@@ -325,6 +325,19 @@ void printCSV(std::vector<float> times, std::string fileName){
     csv.close();
 }
 
+SpecialArray copyBiggerVersion(SpecialArray *B, int matrixSize){
+    int nextSize = pow(2, ceil(log(matrixSize)/log(2)));
+
+    SpecialArray A = SpecialArray(nextSize);
+
+    for(int i = 0; i < matrixSize; i++){
+        for(int j = 0; j < matrixSize; j++){
+            A.rows[i][j] = B->rows[i][j];
+        }
+    }
+    return A;
+}
+
 void performTrials(){
     std::vector<int> nValues = {30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390,
                                 420, 450, 480, 510, 540, 570};
@@ -335,17 +348,19 @@ void performTrials(){
         float averateTimeRecurse = 0.0, averateTimeBruteForce = 0.0, averateTimeStrassen = 0.0;
         std::cout << nValues[i] << std::endl <<std::endl;
         for (size_t j = 0; j < TRIALS_PER_N_VALUE; j++){
-            SpecialArray A = generateRandomMatrix(nValues[i], true);
-            SpecialArray B = generateRandomMatrix(nValues[i], true);
+            SpecialArray A = generateRandomMatrix(nValues[i], false);
+            SpecialArray B = generateRandomMatrix(nValues[i], false);
 
-            SpecialArray H = copySmallerVersion(&A, nValues[i]);
-            SpecialArray I = copySmallerVersion(&B, nValues[i]);
+            //SpecialArray H = copySmallerVersion(&A, nValues[i]);
+            //SpecialArray I = copySmallerVersion(&B, nValues[i]);
 
             int initialA_Indices[] = {0, A.arrSize - 1, 0, A.arrSize- 1};
             int initialB_Indices[] = {0, B.arrSize - 1, 0, B.arrSize - 1};
 
             auto startRecurse = std::chrono::high_resolution_clock::now();
-            SpecialArray C = square_matrix_mult_recurse(&A, &B, initialA_Indices, initialB_Indices, A.arrSize);
+            SpecialArray newA = copyBiggerVersion(&A, nValues[i]);
+            SpecialArray newB = copyBiggerVersion(&B, nValues[i]);
+            SpecialArray C = square_matrix_mult_recurse(&newA, &newB, initialA_Indices, initialB_Indices, newA.arrSize);
             SpecialArray D = copySmallerVersion(&C, nValues[i]);
             printMatrix(&D, nValues[i]);
             auto endRecurse = std::chrono::high_resolution_clock::now();
@@ -353,14 +368,16 @@ void performTrials(){
                                                                                         - startRecurse).count();
 
             auto startBruteForce = std::chrono::high_resolution_clock::now();
-            SpecialArray E = square_matrix_mult(&H, &I, nValues[i]);
+            SpecialArray E = square_matrix_mult(&A, &B, nValues[i]);
             printMatrix(&E, nValues[i]);
             auto endBruteForce = std::chrono::high_resolution_clock::now();
             averateTimeBruteForce += std::chrono::duration_cast<std::chrono::milliseconds>(endBruteForce 
                                                                                             - startBruteForce).count();
 
             auto startStrassen = std::chrono::high_resolution_clock::now();
-            SpecialArray F = square_matrix_mult_strassen(&A, &B, initialA_Indices, initialB_Indices, A.arrSize);
+            SpecialArray newA_again = copyBiggerVersion(&A, nValues[i]);
+            SpecialArray newB_again = copyBiggerVersion(&B, nValues[i]);
+            SpecialArray F = square_matrix_mult_strassen(&newA_again, &newB_again, initialA_Indices, initialB_Indices, newA_again.arrSize);
             SpecialArray G = copySmallerVersion(&F, nValues[i]);
             printMatrix(&G, nValues[i]);
             auto endStrassen = std::chrono::high_resolution_clock::now();
@@ -379,7 +396,7 @@ void performTrials(){
         timesStrassen.push_back(averateTimeStrassen);
     }
     
-    printCSV(timesRecurse, "Recurse.csv");
+    printCSV(timesRecurse, "Recursive.csv");
     printCSV(timesBruteForce, "BruteForce.csv");
     printCSV(timesStrassen, "Strassen.csv");
 }
